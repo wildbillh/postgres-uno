@@ -1,7 +1,7 @@
 postgres-uno
 ============
 
-[![Inline docs](http://inch-ci.org/github/wildbillh/postgres-uno.svg?branch=master)](http://inch-ci.org/github/wildbillh/postgres-uno)
+[![Inline docs](http://inch-ci.org/github/wildbillh/postgres-uno.svg?branch=master)](http://inch-ci.org/github/wildbillh/postgres-uno)[![npm version](https://badge.fury.io/js/postgres-uno.svg)](https://badge.fury.io/js/postges-uno)
 
 Synopsis
 ---------
