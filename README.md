@@ -33,6 +33,7 @@ db.connect(dbConfigObject)
 })
 .then( (results) => {
     console.log(results.rows);
+    // [ anonymous { thedate: 2016-10-31T18:16:24.859Z } ]
     return db.disconnect();
 })
 .then ( () => {
@@ -44,6 +45,21 @@ db.connect(dbConfigObject)
 });
 ```
 
+Other Features
+--------------
+
+The class is also an emitter. The following events can be listened for:
+* connect
+* disconnect
+* error
+* query
+* results (turned off by default)
+* warning
+
+The emitter behavior can be toggled through the emitControl setter. The default value of this object is:
+```javascript
+{connect: true, disconnect: true, error: true, query: true, results: false, warning: true} 
+```
 Installation
 ------------
 npm install postgres-uno --save
