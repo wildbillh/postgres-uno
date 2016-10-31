@@ -1,5 +1,8 @@
 postgres-uno
 ============
+
+[![Inline docs](http://inch-ci.org/github/wildbillh/postgres-uno.svg?branch=master)](http://inch-ci.org/github/wildbillh/postgres-uno)
+
 Synopsis
 ---------
 The postgres-uno module supplies an ES6 class that provides a single database
