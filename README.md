@@ -58,7 +58,12 @@ The class is also an emitter. The following events can be listened for:
 
 The emitter behavior can be toggled through the emitControl setter. The default value of this object is:
 ```javascript
-{connect: true, disconnect: true, error: true, query: true, results: false, warning: true} 
+    {connect: true, 
+    disconnect: true, 
+    error: true, 
+    query: true, 
+    results: false, 
+    warning: true} 
 ```
 Installation
 ------------
