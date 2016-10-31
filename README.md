@@ -13,7 +13,7 @@ See the documentation of the node-postgres module for additional features; https
 Code Example
 -----------
 ```javascript
-let PostgresUno = require ('../lib/postgres-uno');
+let PostgresUno = require ('postgres-uno');
 
 // Define connection objects and strings. Either can be used.
 let dbConfigObject = {
