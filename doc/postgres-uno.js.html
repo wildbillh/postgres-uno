@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: postgres-uno.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: postgres-uno.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+let pg = require('pg');
+const EventEmitter = require('events').EventEmitter;
+
+/**
+ *
+ * @class
+ * Class that provides a single database connection to a Postgres server.
+ * This class uses the node-postgres module for it's underlying connection.
+ * The pg.Client property is exposed for those wanting to use advanced features.
+ * All class methods other than the getter above, return a Promise.
+ * See the node-postgres documentation:
+ * {@link https://github.com/brianc/node-postgres} for more information.
+ *
+ */
+
+class PostgresUno extends EventEmitter{
+    /**
+     * Create a new instance of the class.
+     *@constructor
+     */
+    constructor () {
+        super();
+        this._client = null;
+        // This object controls which events are emitted.
+        this._emit = {
+            connect: true,
+            disconnect: true,
+            error: true,
+            query: true,
+            result: false,
+            warning: true
+        };
+    }
+
+    /**
+     * Connect to a server using the provided query string or connect object.
+     * If the connect fails, the method rejects and an error event is emitted.
+     * If connect is called more than once, the new connection will be honored,
+     * but a warning event will be emitted. A connect event is emitted when resolved.
+     * @param {object | string} connectionConfig - Passes the DB login parameters to the class.
+     * Can be an object or valid Postgres JDBC connection String
+     * @param {string} connectionConfig.host
+     * @param {string} connectionConfig.user
+     * @param {string} connectionConfig.password
+     * @param {number} [connectionConfig.port=5432]
+     * @param {string} [connectionConfig.database]
+     * @param {string} connectionConfig.string
+     * Instead of an object, a String of the form: 'postgresql://user:password@host:port/database' can be passed.
+     * @fires PostgresUno#error
+     * @fires PostgresUno#warning
+     * @fires PostgresUno#connect
+     * @returns {Promise} if resolved, then connect was successful, else reject contains error string.
+     */
+    connect(connectionConfig) {
+        return new Promise ( (resolve, reject) => {
+            // Test to see if the client was previously initialized, if so disconnect and reconnect.
+            if (this._client) {
+                this._emit.warning &amp;&amp; this.emit('warning', "Warning: Connect called on live connection. Disconnecting and reconnecting");
+                this.disconnect()
+                .then(() => {
+                    return this._connect(connectionConfig);
+                })
+                .then( () => {
+                    return resolve();
+                })
+                .catch( () => {
+                    return reject();
+                });
+            }
+            else {
+                this._connect(connectionConfig)
+                .then ( () => {
+                    return resolve();
+                })
+                .catch ( (err) => {
+                    return reject(err.toString());
+                });
+            }
+        });
+
+    }
+
+    /***
+     * @param connectionConfig
+     * @returns {Promise}
+     * @private
+     */
+    _connect(connectionConfig) {
+        return new Promise ( (resolve, reject) => {
+            this._client = new pg.Client(connectionConfig);
+            this._client.connect( (err) => {
+                if (err) {
+                    this._emit.error &amp;&amp; this.emit('error', err.toString());
+                    return reject(err.toString());
+                }
+                // Allow error messages to go back to the user
+                this._emit.connect &amp;&amp; this.emit('connect', 'Connected');
+                return resolve();
+            });
+
+        });
+    }
+
+
+    /**
+     *  Submit sql or ddl to be applied to the server. When resolved, the promise contains
+     *  a results object. The format is documented
+     *  somewhat in the return documentation below. If an error is detected,
+     *  the method rejects and an error event is emitted.
+     *  By default the query event is emitted when this method is called.
+     *  The results event is emitted when the method resolves, but this feature is off by default.
+     * @param sql {String} Valid SQL or DDL to apply to the DB
+     * @fires PostgresUno#error
+     * @fires PostgresUno#query
+     * @fires PostgresUno#results
+     * @returns {Promise} - On success, the promise will be resolved and a data object will be
+     * returned. The promise will be rejected and an error message returned on error.
+     * @returns {Object} results - The returned data object.
+     * @returns {String} results.command - The type of query submitted: 'SELECT', 'UPDATE', etc.
+     * @returns {Number} results.rowCount - The number of rows returned.
+     * @returns {Array} results.fields - An Array of Objects describing the columns returned. Usefull
+     * properties are name, columnID, format ... ect.
+     * @returns {Array} results.rows - An Array of Objects equal to the size of rowCount above. Each
+     * object contains properties matching the return column names.
+     */
+    query (sql) {
+        return new Promise ( (resolve, reject) => {
+            if (!this._client) {
+                return reject('client is not connected');
+            }
+
+            this._emit.query &amp;&amp; this.emit('query', {Query: sql});
+            this._client.query(sql, (err, results) => {
+                if (err) {
+                    this.emit('error', err.toString());
+                    return reject(err.toString());
+                }
+                else {
+                    this._emit.results &amp;&amp; this.emit('results', results);
+                    return resolve(results);
+                }
+            })
+        });
+    }
+
+    /**
+     *  Used to disconnect from the Database. All cleanup procedures should call this.
+     *  Typically your node process will not end normally if there is still a connection
+     *  open. A disconnect event if emitted on successful call.
+     *  @fires PostgresUno#disconnect
+     */
+    disconnect () {
+        return new Promise ( (resolve, reject) => {
+            this._client &amp;&amp; this._client.end( (err) => {
+                if (err) {
+                    this._emit.error &amp;&amp; this.emit('error', err.toString());
+                    return reject(err);
+                }
+                else {
+                    this._emit.disconnect &amp;&amp; this.emit('disconnect', 'Disconnected');
+                    this._client = null;
+                    return resolve();
+                }
+            });
+
+        });
+    }
+
+    /**
+     * If an error is detected during connect(), disconnect() or query() calls,
+     * the method rejects the promise and an error event is emitted.
+     * It can be useful to listen to this event for easy debugging.
+     * @event PostgresUno#error
+     * @type {string}
+     *
+     */
+
+    /**
+     * The warning event is only emitted when the connect method is called more than one time.
+     * @event PostgresUno#warning
+     * @type {string}
+     *
+     */
+
+    /**
+     * The connect event is only emitted when the connect method resolves.
+     * @event PostgresUno#connect
+     * @type {string}
+     *
+     */
+
+    /**
+     * The disconnect event is only emitted when the disconnect method resolves.
+     * @event PostgresUno#disconnect
+     * @type {string}
+     *
+     */
+
+    /**
+     * The query event is emitted when the query method is called, but before the
+     * submission to the db. The object emitted has a Query property containing the sql. This is often
+     * useful for debugging purposes.
+     * @event PostgresUno#query
+     * @type {object}
+     *
+     */
+
+    /**
+     * The results event is emitted when the query method has resolved.
+     * The event contains the results object. This emit is off by default.
+     * Use the emitControl setter to change the value, if desired.
+     * @event PostgresUno#results
+     * @type {object}
+     *
+     */
+
+
+    /**
+     * Getter that returns the underlying node-postgres client object.
+     * This is useful for using advanced features of the former module,
+     * not exposed by this class.
+     * @returns {object}
+     */
+    get pgClient() {
+        return this._client;
+    }
+
+    /**
+     * Getter that returns the underlying emit control object.
+     * By default all emits other than results, are turned on.
+     * @returns {object}
+     */
+    get emitControl() {
+        return this._emit;
+    }
+
+    /**
+     * Setter for the emit control object. Be default, emits occur for
+     * connect, disconnect, error, query and warning (results is turned off). For
+     * performance reasons, these can be turned off by the user. Example: to disable query
+     * and results emits only, set the value as such:
+     * {connect: true, disconnect: true, error: true, query: false, results: false, warning: true}
+     * @param {object} emitObject
+     */
+    set emitControl (emitObject) {
+        this._emit = emitObject;
+    }
+
+}
+
+module.exports = PostgresUno;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="PostgresUno.html">PostgresUno</a></li></ul><h3>Events</h3><ul><li><a href="PostgresUno.html#event:connect">connect</a></li><li><a href="PostgresUno.html#event:disconnect">disconnect</a></li><li><a href="PostgresUno.html#event:error">error</a></li><li><a href="PostgresUno.html#event:query">query</a></li><li><a href="PostgresUno.html#event:results">results</a></li><li><a href="PostgresUno.html#event:warning">warning</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Oct 31 2016 08:35:40 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

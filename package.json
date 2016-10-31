@@ -1,0 +1,35 @@
+{
+  "name": "postgres-uno",
+  "version": "1.0.0",
+  "description": "An ES6 Class for connecting to Postgresql with a single connection",
+  "main": "lib/postgres-uno.js",
+  "directories": {
+    "lib": "./lib",
+    "doc": "./doc",
+    "example": "./example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-docs": "node_modules/.bin/jsdoc lib/ --destination doc"
+  },
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "single connection",
+    "class",
+    "es6",
+    "node-postgres"
+  ],
+  "author": "Bill Hodges",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wildbillh/postgres-uno"
+  },
+  "dependencies": {
+    "pg": "^6.1.0"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.4.2"
+  }
+}
