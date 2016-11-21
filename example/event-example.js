@@ -49,6 +49,7 @@ db.connect(dbConfigObject)
         console.log('normal exit');
     })
     .catch ( (err) => {
+        console.log('in catch');
         console.log(err);
         return db.disconnect();
     });
