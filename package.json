@@ -1,6 +1,6 @@
 {
   "name": "postgres-uno",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "An ES6 Class for connecting to Postgresql with a single connection",
   "main": "lib/postgres-uno.js",
   "directories": {
