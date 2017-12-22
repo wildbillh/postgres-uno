@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>PostgresUno</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>PostgresUno<span class="signature">()</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Class that provides a single database connection to a Postgres server.This class uses the node-postgres module for it's underlying connection.The pg.Client property is exposed for those wanting to use advanced features.All class methods other than the getter above, return a Promise.See the node-postgres documentation:<a href="https://github.com/brianc/node-postgres">https://github.com/brianc/node-postgres</a> for more information.</div>
         
@@ -44,7 +44,9 @@
     <h2>Constructor</h2>
     
 
+    
     <h4 class="name" id="PostgresUno"><span class="type-signature"></span>new PostgresUno<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -121,6 +123,8 @@
 
 
 
+
+
     
     </div>
 
@@ -130,7 +134,9 @@
 
     
 
-     
+    
+
+    
 
     
 
@@ -183,7 +189,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line332">line 332</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line333">line 333</a>
     </li></ul></dd>
     
 
@@ -245,7 +251,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line320">line 320</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line321">line 321</a>
     </li></ul></dd>
     
 
@@ -307,7 +313,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line311">line 311</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -334,7 +340,9 @@
 
     
 
+    
     <h4 class="name" id=".decryptPass"><span class="type-signature">(static) </span>decryptPass<span class="signature">(encryptedPass)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -482,12 +490,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".encryptPass"><span class="type-signature">(static) </span>encryptPass<span class="signature">(clearPass)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -635,12 +647,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".escapeDoubleQuotes"><span class="type-signature">(static) </span>escapeDoubleQuotes<span class="signature">(source)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -788,12 +804,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".escapeSingleQuotes"><span class="type-signature">(static) </span>escapeSingleQuotes<span class="signature">(source)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -941,12 +961,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".numberOrNull"><span class="type-signature">(static) </span>numberOrNull<span class="signature">(source)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    
 
     
 
@@ -1085,12 +1109,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".stringOrNull"><span class="type-signature">(static) </span>stringOrNull<span class="signature">(source)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    
 
     
 
@@ -1229,12 +1257,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">(connectionConfig)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
 
     
 
@@ -1682,12 +1714,16 @@
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id="disconnect"><span class="type-signature"></span>disconnect<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+    <h4 class="name" id="disconnect"><span class="type-signature"></span>disconnect<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;(null|string)>}</span></h4>
+    
 
     
 
@@ -1738,7 +1774,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line238">line 238</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line239">line 239</a>
     </li></ul></dd>
     
 
@@ -1766,6 +1802,26 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(null|string)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
 
 
 
@@ -1774,7 +1830,9 @@
 
     
 
-    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(sql)</span><span class="type-signature"> &rarr; {Object|String|Number|Array|Array}</span></h4>
+    
+    <h4 class="name" id="query"><span class="type-signature"></span>query<span class="signature">(sql)</span><span class="type-signature"> &rarr; {Promise.&lt;(object|string)>|Promise.&lt;(object|string)>|String|Number|Array|Array}</span></h4>
+    
 
     
 
@@ -1910,10 +1968,22 @@
 <ul>
         <li>
 <div class="param-desc">
-    Promise<object> - On success, the promise will be resolved and a data object will bereturned. The promise will be rejected and an error message returned on error.
+    - On success, the promise will be resolved and a data object will bereturned. The promise will be rejected and an error message returned on error.
 </div>
 
 
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(object|string)></span>
+
+
+    </dd>
+</dl>
 </li>
     
         <li>
@@ -1929,7 +1999,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
+<span class="param-type">Promise.&lt;(object|string)></span>
 
 
     </dd>
@@ -2019,6 +2089,8 @@
 
 
 
+
+
         
     
 
@@ -2032,7 +2104,9 @@
 
     
 
+    
     <h4 class="name" id="event:connect">connect</h4>
+    
 
     
 
@@ -2093,7 +2167,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line272">line 272</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line273">line 273</a>
     </li></ul></dd>
     
 
@@ -2119,12 +2193,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="event:disconnect">disconnect</h4>
+    
 
     
 
@@ -2185,7 +2263,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line279">line 279</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line280">line 280</a>
     </li></ul></dd>
     
 
@@ -2211,12 +2289,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="event:error">error</h4>
+    
 
     
 
@@ -2277,7 +2359,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line256">line 256</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line257">line 257</a>
     </li></ul></dd>
     
 
@@ -2303,12 +2385,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="event:query">query</h4>
+    
 
     
 
@@ -2369,7 +2455,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line286">line 286</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line287">line 287</a>
     </li></ul></dd>
     
 
@@ -2395,12 +2481,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="event:results">results</h4>
+    
 
     
 
@@ -2461,7 +2551,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line295">line 295</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line296">line 296</a>
     </li></ul></dd>
     
 
@@ -2487,12 +2577,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="event:warning">warning</h4>
+    
 
     
 
@@ -2553,7 +2647,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line265">line 265</a>
+        <a href="postgres-uno.js.html">postgres-uno.js</a>, <a href="postgres-uno.js.html#line266">line 266</a>
     </li></ul></dd>
     
 
@@ -2563,6 +2657,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -2597,7 +2693,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Wed Dec 20 2017 06:07:10 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 22 2017 10:20:41 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
