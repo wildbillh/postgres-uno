@@ -9,7 +9,7 @@
     "example": "./example"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha -t 10000 --async-only --reporter spec --ui bdd test",
+    "test": "node_modules/.bin/mocha --reporter spec --ui bdd test",
     "generate-docs": "node_modules/.bin/jsdoc lib/ --destination doc"
   },
   "keywords": [
@@ -21,17 +21,20 @@
     "node-postgres"
   ],
   "author": "Bill Hodges",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/wildbillh/postgres-uno"
   },
   "dependencies": {
-    "pg": "^6.1.0"
+    "pg": "^7.11.0"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "jsdoc": "^3.4.2",
-    "mocha": "^3.1.2"
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "jsdoc": "^3.6.2",
+    "jsdoc-to-markdown": "^5.0.0",
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2"
   }
 }

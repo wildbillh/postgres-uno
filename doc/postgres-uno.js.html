@@ -27,12 +27,15 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>"use strict";
-
-let pg = require('pg');
+// External Modules
+const pg = require('pg');
 const EventEmitter = require('events').EventEmitter;
 const crypto = require('crypto');
+
+// Defines
 const CRYPTO_ALGORITHM = 'aes-256-ctr';
 const SEED = 'X3f18bH!';
+const SEED_IV = '!A8cF:8j38D579m10$0F6CDB62CA34CA';
 
 /**
  *
@@ -70,30 +73,32 @@ class PostgresUno extends EventEmitter{
      * If the connect fails, the method rejects and an error event is emitted.
      * If connect is called more than once, the new connection will be honored,
      * but a warning event will be emitted. A connect event is emitted when resolved.
-     * @param {object | string} connectionConfig - Passes the DB login parameters to the class.
-     * Can be an object or valid Postgres JDBC connection String
-     * @param {string} connectionConfig.host
-     * @param {string} connectionConfig.user
-     * @param {string} connectionConfig.password
-     * @param {number} [connectionConfig.port=5432]
-     * @param {string} [connectionConfig.database]
-     * @param {string | null} connectionConfig.string=null
-     * @param {boolean} connectionConfig.encrypted=false
-     * @param {boolean} connectionConfig.encryptedUser = false
-     * Instead of an object, a String of the form: 'postgresql://user:password@host:port/database' can be passed.
+     * The parameters to this function can be an object or a string of the form: 'postgresql://user:password@host:port/database' can be passed.
+     * @param {object} config - Passes the DB login parameters to the class in object or string form.
+     * @param {string} config.host
+     * @param {string} config.user
+     * @param {string} config.password
+     * @param {number} [config.port=5432]
+     * @param {string} [config.database=null]
+     * @param {string} [config.string=null]
+     * @param {boolean} [config.encrypted=false]
+     * @param {boolean} [config.encryptedUser=false]
      * @fires PostgresUno#error
      * @fires PostgresUno#warning
      * @fires PostgresUno#connect
-     * @returns {Promise} if resolved, then connect was successful, else reject contains error string.
+     * @returns {Promise}
+     * @fulfil
+     * @reject {string} - error message
+     *
      */
-    connect(connectionConfig) {
+    connect(config) {
         return new Promise ( (resolve, reject) => {
             // Test to see if the client was previously initialized, if so disconnect and reconnect.
             if (this._client) {
                 this._emit.warning &amp;&amp; this.emit('warning', "Warning: Connect called on live connection. Disconnecting and reconnecting");
                 this.disconnect()
                 .then(() => {
-                    return this._connect(connectionConfig);
+                    return this._connect(config);
                 })
                 .then( () => {
                     return resolve();
@@ -103,7 +108,7 @@ class PostgresUno extends EventEmitter{
                 });
             }
             else {
-                this._connect(connectionConfig)
+                this._connect(config)
                 .then ( () => {
                     return resolve();
                 })
@@ -112,113 +117,34 @@ class PostgresUno extends EventEmitter{
                 });
             }
         });
-
     }
 
-    /***
-     * @param connectionConfig
-     * @returns {Promise}
-     * @private
+    /**
+     *  Used to disconnect from the Database. All cleanup procedures should call this.
+     *  Typically your node process will not end normally if there is still a connection
+     *  open. A disconnect event if emitted on successful call.
+     *  @returns {Promise}
+     *  @fulfil
+     *  @reject {string} - error message
+     *  @fires PostgresUno#disconnect
      */
-    _connect(connectionConfig) {
+    disconnect () {
         return new Promise ( (resolve, reject) => {
-
-            // Make a local copy of the connection info
-            let connection = Object.assign({}, connectionConfig);
-
-            if (connection.encrypted) {
-                connection.password = PostgresUno.decryptPass(connection.password)
-            }
-            if (connection.ecryptedUser) {
-                connection.user = PostgresUno.decryptPass(connection.user)
-            }
-            this._client = new pg.Client(connection);
-            this._client.connect( (err) => {
+            if (!this._client) {return resolve();}
+            this._client.end( (err) => {
                 if (err) {
                     this._emit.error &amp;&amp; this.emit('error', err.toString());
-                    return reject(err.toString());
+                    return reject(err);
                 }
-                // Allow error messages to go back to the user
-                this._emit.connect &amp;&amp; this.emit('connect', 'Connected');
-                return resolve();
+                else {
+                    this._emit.disconnect &amp;&amp; this.emit('disconnect', 'Disconnected');
+                    this._client = null;
+                    return resolve();
+                }
             });
 
         });
     }
-
-    /**
-     * Used internally by the class to provide a simple decryption algorithm
-     * @param {string} encryptedPass - Should be an hex encoded, encrypted string.
-     * @returns {string} - decoded password
-     */
-    static decryptPass(encryptedPass) {
-        let decipher = crypto.createDecipher(CRYPTO_ALGORITHM,SEED);
-        let dec = decipher.update(encryptedPass,'hex','utf8');
-        dec += decipher.final('utf8');
-        return dec;
-    }
-
-    /**
-     * Provides a simple mechanism for the user to encrypt a password. Note this is
-     * not a secure mechanism by any means. It just allows the db config to be stored
-     * locally without a clear text password.
-     * @param {string} clearPass
-     * @returns {string} - hex encoded, encrypted password
-     */
-    static encryptPass (clearPass) {
-        let cipher = crypto.createCipher(CRYPTO_ALGORITHM,SEED);
-        let cryptic = cipher.update(clearPass,'utf8','hex');
-        cryptic += cipher.final('hex');
-        return cryptic;
-    }
-
-
-
-    /**
-     * Escape double quotes in the target string.
-     * @param {string} source
-     * @returns {string} the string with double quotes escaped
-     */
-    static escapeDoubleQuotes (source) {
-        return (typeof source === 'string') ? source.replace(/"/g, '\\"') : source;
-    }
-
-    /**
-     * Escape single quotes in the target string.
-     * @param {string} source
-     * @returns {string} the string with single quotes escaped.
-     */
-    static escapeSingleQuotes (source) {
-        return (typeof source === 'string') ? source.replace(/'/g, "''") : source;
-    }
-
-    /**
-     * If source is null, return string 'null', Escape single quotes.
-     * @param source
-     * @returns {*}
-     */
-    static stringOrNull (source) {
-        if (!source) {
-            return 'NULL';
-        }
-        else if (typeof source === 'string') {
-            return `'${source.replace(/'/g, "''")}'`;
-        }
-        return source;
-    }
-
-    /**
-     * If source is null, return string 'null'.
-     * @param source
-     * @returns {*}
-     */
-    static numberOrNull (source) {
-        if (!source) {
-            return 'NULL';
-        }
-        return source;
-    }
-
 
     /**
      *  Submit sql or ddl to be applied to the server. When resolved, the promise contains
@@ -231,15 +157,9 @@ class PostgresUno extends EventEmitter{
      * @fires PostgresUno#error
      * @fires PostgresUno#query
      * @fires PostgresUno#results
-     * @returns {Promise&lt;object | string>} - On success, the promise will be resolved and a data object will be
-     * returned. The promise will be rejected and an error message returned on error.
-     * @returns {Promise&lt;object | string>} results - The returned data object.
-     * @returns {String} results.command - The type of query submitted: 'SELECT', 'UPDATE', etc.
-     * @returns {Number} results.rowCount - The number of rows returned.
-     * @returns {Array} results.fields - An Array of Objects describing the columns returned. Useful
-     * properties are name, columnID, format ... ect.
-     * @returns {Array} results.rows - an array of objects equal to the size of rowCount above. Each
-     * object contains properties matching the return column names.
+     * @returns {Promise}
+     * @fulfil { { rows: [{col1: val, col2: val}], fields: ["col1", "col2"], rowCount: Number, command: String} }
+     * @reject {string} - error message
      */
     query (sql) {
         return new Promise ( (resolve, reject) => {
@@ -261,30 +181,185 @@ class PostgresUno extends EventEmitter{
         });
     }
 
-    /**
-     *  Used to disconnect from the Database. All cleanup procedures should call this.
-     *  Typically your node process will not end normally if there is still a connection
-     *  open. A disconnect event if emitted on successful call.
-     *  @returns {Promise&lt;null | string>}
-     *  @fires PostgresUno#disconnect
+    // Private methods
+
+    /***
+     * @param config
+     * @returns {Promise}
+     * @private
      */
-    disconnect () {
+    _connect(config) {
         return new Promise ( (resolve, reject) => {
-            if (!this._client) {return resolve();}
-            this._client.end( (err) => {
+
+            // Make a local copy of the connection info
+            let connection = Object.assign({}, config);
+
+            // Decrypt any encrypted values
+            connection = PostgresUno._decryptConfigProperties(connection);
+
+            // Get a new client and connect
+            this._client = new pg.Client(connection);
+            this._client.connect( (err) => {
                 if (err) {
                     this._emit.error &amp;&amp; this.emit('error', err.toString());
-                    return reject(err);
+                    return reject(err.toString());
                 }
-                else {
-                    this._emit.disconnect &amp;&amp; this.emit('disconnect', 'Disconnected');
-                    this._client = null;
-                    return resolve();
-                }
+                // Allow error messages to go back to the user
+                this._emit.connect &amp;&amp; this.emit('connect', 'Connected');
+                return resolve();
             });
 
         });
     }
+
+    // Statics
+
+    /***
+     * Checks to see if the pass or username is encrypted. If so, it returns the
+     * clear text version.
+     * @param config {{
+     *     host: string,
+     *     user: string,
+     *     password: string,
+     *     port: number = 5432,
+     *     database: string,
+     *     encrypted: boolean = false,
+     *     encryptedUser: boolean = false
+     * }}
+     * @returns {{
+     *     host: string,
+     *     user: string,
+     *     password: string,
+     *     port: number,
+     *     database: string,
+     *     encrypted: boolean,
+     *     encryptedUser: boolean
+     * }}
+     * @throws string
+     * @private
+     */
+    static _decryptConfigProperties (config) {
+
+       if (config.encrypted) {
+           let decryptMethod = config.password.includes("::") ? PostgresUno.decryptPassIV : PostgresUno.decryptPass;
+           config.password = decryptMethod.call(null, config.password);
+           config.encrypted = false;
+       }
+
+        if (config.encryptedUser) {
+            let decryptMethod = config.user.includes("::") ? PostgresUno.decryptPassIV : PostgresUno.decryptPass;
+            config.user = decryptMethod.call(null, config.user);
+            config.encryptedUser = false;
+        }
+
+       return config;
+    }
+
+    /**
+     * Used to provide a simple decryption algorithm for user and password. This method is deprecated. You should
+     * use decryptPassIV instead.
+     * @param {string} encryptedPass - Should be an hex encoded, encrypted string.
+     * @returns {string} - decoded password
+     * @deprecated
+     */
+    static decryptPass(encryptedPass) {
+        let decipher = crypto.createDecipher(CRYPTO_ALGORITHM,SEED);
+        let dec = decipher.update(encryptedPass,'hex','utf8');
+        dec += decipher.final('utf8');
+        return dec;
+    }
+
+    /**
+     *  Used to provide a simple decryption algorithm for user and password.
+     * @param {string} encryptedPass - Should be an hex encoded, encrypted string.
+     * @returns {string} - decoded password
+     */
+    static decryptPassIV (encryptedPass)  {
+        let ar = encryptedPass.split('::');
+        let iv = Buffer.from(ar[0], 'hex');
+        let decipher = crypto.createDecipheriv(CRYPTO_ALGORITHM,SEED_IV, iv);
+        let dec = decipher.update(ar[1],'hex','utf8');
+        dec += decipher.final('utf8');
+        return dec;
+    }
+
+    /**
+     * Provides a simple mechanism for the user to encrypt a password. Note this is
+     * not a secure mechanism by any means. It just allows the db config to be stored
+     * locally without a clear text password. Note: this method is deprecated.
+     * @param {string} clearPass
+     * @returns {string} - hex encoded, encrypted password
+     * @deprecated
+     */
+    static encryptPass (clearPass) {
+        let cipher = crypto.createCipher(CRYPTO_ALGORITHM,SEED);
+        let cryptic = cipher.update(clearPass,'utf8','hex');
+        cryptic += cipher.final('hex');
+        return cryptic;
+    }
+
+    /**
+     * Provides a simple mechanism for the user to encrypt a password. Note this is
+     * not a secure mechanism by any means. It just allows the db config to be stored
+     * locally without a clear text password.
+     * @param {string} clearPass
+     * @returns {string} - hex encoded, encrypted password
+     */
+    static encryptPassIV (clearPass)  {
+        let iv = crypto.randomBytes(16);
+        let cipher = crypto.createCipheriv(CRYPTO_ALGORITHM,SEED_IV, iv);
+        let cryptic = cipher.update(clearPass,'utf8','hex');
+        cryptic += cipher.final('hex');
+        return `${iv.toString('hex')}::${cryptic}`;
+    }
+
+    /**
+     * Escape double quotes in the target string.
+     * @param {string} source
+     * @returns {string} the string with double quotes escaped
+     */
+    static escapeDoubleQuotes (source) {
+        return (typeof source === 'string') ? source.replace(/"/g, '\\"') : source;
+    }
+
+    /**
+     * Escape single quotes in the target string.
+     * @param {string} source
+     * @returns {string} the string with single quotes escaped.
+     */
+    static escapeSingleQuotes (source) {
+        return (typeof source === 'string') ? source.replace(/'/g, "''") : source;
+    }
+
+    /**
+     * If source is null, return string 'null', Escape single quotes.
+     * @param {String | null} source
+     * @returns {String}
+     */
+    static stringOrNull (source) {
+        if (!source) {
+            return 'NULL';
+        }
+        else if (typeof source === 'string') {
+            return `'${source.replace(/'/g, "''")}'`;
+        }
+        return source;
+    }
+
+    /**
+     * If source is null, return string 'null'.
+     * @param {Number | null} source
+     * @returns {Number | String}
+     */
+    static numberOrNull (source) {
+        if (!source) {
+            return 'NULL';
+        }
+
+        return source;
+    }
+
+    // Events
 
     /**
      * If an error is detected during connect(), disconnect() or query() calls,
@@ -384,7 +459,7 @@ module.exports = PostgresUno;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Apr 26 2018 12:59:46 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.2</a> on Tue Jul 02 2019 13:39:24 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

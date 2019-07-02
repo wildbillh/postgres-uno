@@ -9,8 +9,9 @@ let dbConfigObject = {
     user: 'nodejs-test',
     host: 'localhost',
     port: 5432,
-    password: 'nodejs-test',
-    database: 'nodejs-test'
+    password: PostgresUno.encryptPassIV('nodejs-test'),
+    database: 'nodejs-test',
+    encrypted: true
 };
 
 let dbConfigString = 'postgresql://nodejs-test:nodejs-test@localhost/nodejs-test';
@@ -21,8 +22,8 @@ let log = (message) => {
 };
 
 let logQuery = (query) => {
-    console.log(query.Query);
-}
+    console.log(`logged: ${query.Query}`);
+};
 
 // Get and instance of the class
 let db = new PostgresUno();
